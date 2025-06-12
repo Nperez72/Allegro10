@@ -2,10 +2,11 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_color.h>
 
-enum SpriteType {
+enum SpriteType { // All the specialty types are mutually exclsuive, so enum
     NORMAL,
     SCARED,
-    BABY
+    BABY,
+    SPINNING 
 };
 
 class sprite
@@ -48,4 +49,8 @@ private:
     // For BABY
     float babyScale = 1.0f;
     double babyLastScaleTime = 0;
+
+    // For SPINNING
+    float spinAngle = 0.0f; // in radians
+    float spinSpeed = 0.1f; // radians per frame
 };

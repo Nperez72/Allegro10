@@ -2,23 +2,24 @@
 #include <allegro5\allegro_image.h>
 #include <stdio.h>
 #include "Sprite.h"
-
 #include <iostream>
-#include <random>
 #include <ctime>
 using namespace std;
 
 sprite::sprite()
 {
-    // Randomly assign type (SCARED or BABY)
-    static std::mt19937 rng(static_cast<unsigned>(time(nullptr)));
-    std::uniform_int_distribution<int> dist(0, 1);
-    type = dist(rng) == 0 ? SCARED : BABY;
+    // Randomly assign type (SCARED, BABY, or SPINNING)
+    int t = rand() % 3;
+    if (t == 0) type = SCARED;
+    else if (t == 1) type = BABY;
+    else type = SPINNING;
 
     // Initialize specialty fields
     scaredColor = al_map_rgb(255, 255, 255);
     babyScale = 1.0f;
     babyLastScaleTime = 0;
+    spinAngle = 0.0f;
+    spinSpeed = 0.1f + 0.1f * (rand() % 5); // randomize spin speed a bit
     x = y = 0;
 }
 
@@ -60,6 +61,18 @@ void sprite::drawSprite()
             width * babyScale, height * babyScale,
             0);
     }
+    else if (type == SPINNING)
+    {
+        // Draw rotated around the center
+        float cx = width / 2.0f;
+        float cy = height / 2.0f;
+        al_draw_rotated_bitmap(
+            image[curframe],
+            cx, cy,
+            x + cx, y + cy, // Position to draw (centered)
+            spinAngle, 0
+        );
+    }
     else
     {
         al_draw_bitmap(image[curframe], x, y, 0);
@@ -100,6 +113,14 @@ void sprite::updatesprite()
             babyLastScaleTime = 0;
         }
     }
+
+    // SPINNING: update angle
+    if (type == SPINNING)
+    {
+        spinAngle += spinSpeed;
+        if (spinAngle > ALLEGRO_PI * 2)
+            spinAngle -= ALLEGRO_PI * 2;
+    }
 }
 
 void sprite::bouncesprite(int SCREEN_W, int SCREEN_H)
@@ -139,7 +160,6 @@ bool sprite::collidesWith(sprite& other)
     int w2 = (other.type == BABY) ? int(other.width * other.babyScale) : other.width;
     int h2 = (other.type == BABY) ? int(other.height * other.babyScale) : other.height;
 
-    // Simple collision detection
     return !(x + w1 < other.x || x > other.x + w2 ||
              y + h1 < other.y || y > other.y + h2);
 }
@@ -149,7 +169,7 @@ void sprite::onCollision(sprite* other)
     if (type == SCARED)
     {
         // Change to a random color and teleport
-        scaredColor = al_map_rgb(rand() % 255, rand() % 255, rand() % 255);
+        scaredColor = al_map_rgb(rand() % 256, rand() % 256, rand() % 256);
         x = rand() % 500;
         y = rand() % 400;
     }
