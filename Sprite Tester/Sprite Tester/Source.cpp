@@ -2,6 +2,7 @@
 #include <allegro5\allegro_image.h>
 #include "Sprite.h"
 #include <iostream>
+#include <vector>
 using namespace std;
 
 int main(void)
@@ -10,17 +11,17 @@ int main(void)
 	int width = 640;
 	int height = 480;
 	bool done = false;
-
 	bool redraw = true;
 	const int FPS = 60;
-
+	const int NUM_ALIENS = 5; // Number of aliens to spawn
 
 	//allegro variable
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-	sprite alien;
 	ALLEGRO_TIMER *timer = NULL;
 
+	// Create a vector of aliens, each with a random specialty skill
+	std::vector<sprite> aliens(NUM_ALIENS);
 
 	//program init
 	if(!al_init())										//initialize Allegro
@@ -42,7 +43,9 @@ int main(void)
 	al_set_target_bitmap(al_get_backbuffer(display));
 	al_start_timer(timer);
 
-	alien.load_animated_sprite(9);
+	// Load sprites for each alien in the vector
+	for(auto& alien : aliens)
+		alien.load_animated_sprite(9);
 
 	while(!done)
 	{
@@ -51,7 +54,20 @@ int main(void)
 
 		if(ev.type == ALLEGRO_EVENT_TIMER)
 		{
-			alien.bouncesprite(width,height);
+			// Update position and handle bouncing for each alien
+			for(auto& alien : aliens)
+				alien.bouncesprite(width, height);
+
+			// Check for collisions between all pairs of aliens
+			for (int i = 0; i < aliens.size(); i++) {
+				for (int j = i + 1; j < aliens.size(); j++) {
+					if (aliens[i].collidesWith(aliens[j])) {
+						aliens[i].onCollision(&aliens[j]);
+						aliens[j].onCollision(&aliens[i]);
+					}
+				}
+			}
+
 			redraw = true;
 		}
 		else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -80,21 +96,20 @@ int main(void)
 
 		if(redraw && al_is_event_queue_empty(event_queue))
 		{
-
-
 			redraw = false; 
-			alien.updatesprite();
-			alien.drawSprite();
+			// Update and draw each alien
+			for(auto& alien : aliens)
+			{
+				alien.updatesprite();
+				alien.drawSprite();
+			}
 			al_flip_display();
 			al_clear_to_color(al_map_rgb(0,0,0));
 		}
 	}
-
 
 	al_destroy_event_queue(event_queue);
 	al_destroy_display(display);						//destroy our display object
 
 	return 0;
 }
-
-
