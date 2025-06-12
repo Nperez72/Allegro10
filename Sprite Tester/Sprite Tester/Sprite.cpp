@@ -8,18 +8,23 @@ using namespace std;
 
 sprite::sprite()
 {
-    // Randomly assign type (SCARED, BABY, or SPINNING)
-    int t = rand() % 3;
+    // Randomly assign type (SCARED, BABY, SPINNING, or FREEZE)
+    int t = rand() % 4;
     if (t == 0) type = SCARED;
     else if (t == 1) type = BABY;
-    else type = SPINNING;
-
-    // Initialize specialty fields
+    else if (t == 2) type = SPINNING;
+    else type = FREEZE;
+    // Initialize each property for each type
     scaredColor = al_map_rgb(255, 255, 255);
+
     babyScale = 1.0f;
     babyLastScaleTime = 0;
+
     spinAngle = 0.0f;
-    spinSpeed = 0.1f + 0.1f * (rand() % 5); // randomize spin speed a bit
+    spinSpeed = 0.1f + 0.1f * (rand() % 5);
+
+    isFrozen = false;
+    freezeStartTime = 0;
     x = y = 0;
 }
 
@@ -81,6 +86,16 @@ void sprite::drawSprite()
 
 void sprite::updatesprite()
 {
+    // FREEZE: skip all updates if frozen
+    if (type == FREEZE && isFrozen) {
+        double now = al_get_time();
+        if (now - freezeStartTime >= 5.0) {
+            isFrozen = false; // Unfreeze after 5 seconds
+        } else {
+            return; // Skip movement and animation
+        }
+    }
+
     // update x position
     if (++xcount > xdelay)
     {
@@ -187,6 +202,12 @@ void sprite::onCollision(sprite* other)
                 std::cout << "The baby sprite died!" << std::endl;
             }
         }
+    }
+    // Freeze movement if true
+    else if (type == FREEZE)
+    {
+        isFrozen = true;
+        freezeStartTime = al_get_time();
     }
 }
 

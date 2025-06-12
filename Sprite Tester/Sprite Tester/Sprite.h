@@ -6,7 +6,8 @@ enum SpriteType { // All the specialty types are mutually exclsuive, so enum
     NORMAL,
     SCARED,
     BABY,
-    SPINNING 
+    SPINNING,
+    FREEZE 
 };
 
 class sprite
@@ -53,4 +54,8 @@ private:
     // For SPINNING
     float spinAngle = 0.0f; // in radians
     float spinSpeed = 0.1f; // radians per frame
+
+    // For FREEZE
+    bool isFrozen = false;
+    double freezeStartTime = 0;
 };

@@ -13,12 +13,15 @@ int main(void)
 	bool done = false;
 	bool redraw = true;
 	const int FPS = 60;
-	const int NUM_ALIENS = 5; // Number of aliens to spawn
+	const int NUM_ALIENS = 6; // Number of aliens to spawn
 
 	//allegro variable
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
+
+	// Ensure proper randomness
+	srand(time(nullptr));
 
 	// Create a vector of aliens, each with a random specialty skill
 	std::vector<sprite> aliens(NUM_ALIENS);
